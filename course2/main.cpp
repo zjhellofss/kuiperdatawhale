@@ -4,6 +4,6 @@
 
 #include <iostream>
 int main() {
-  std::cout << "course1 " << std::endl;
+  std::cout << "course2 " << std::endl;
   return 0;
 }

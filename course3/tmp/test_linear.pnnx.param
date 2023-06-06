@@ -1,0 +1,6 @@
+7767517
+4 3
+pnnx.Input               pnnx_input_0             0 1 0 #0=(1,32)f32
+nn.Linear                linear                   1 1 0 1 bias=True in_features=32 out_features=128 @bias=(128)f32 @weight=(128,32)f32 #0=(1,32)f32 #1=(1,128)f32
+F.sigmoid                F.sigmoid_0              1 1 1 2 $input=1 #1=(1,128)f32 #2=(1,128)f32
+pnnx.Output              pnnx_output_0            1 0 2 #2=(1,128)f32

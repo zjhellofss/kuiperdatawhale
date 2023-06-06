@@ -3,4 +3,5 @@ project(kuiper_datawhale)
 
 add_subdirectory(course1)
 add_subdirectory(course2)
+add_subdirectory(course3)
 

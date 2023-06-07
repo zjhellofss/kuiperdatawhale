@@ -139,62 +139,8 @@ void RuntimeGraph::InitGraphParams(
   for (const auto &[name, parameter] : params) {
     const int type = parameter.type;
     switch (type) {
-    case int(RuntimeParameterType::kParameterUnknown): {
-      RuntimeParameter *runtime_parameter = new RuntimeParameter;
-      runtime_operator->params.insert({name, runtime_parameter});
-      break;
-    }
-
-    case int(RuntimeParameterType::kParameterBool): {
-      RuntimeParameterBool *runtime_parameter = new RuntimeParameterBool;
-      runtime_parameter->value = parameter.b;
-      runtime_operator->params.insert({name, runtime_parameter});
-      break;
-    }
-
-    case int(RuntimeParameterType::kParameterInt): {
-      RuntimeParameterInt *runtime_parameter = new RuntimeParameterInt;
-      runtime_parameter->value = parameter.i;
-      runtime_operator->params.insert({name, runtime_parameter});
-      break;
-    }
-
-    case int(RuntimeParameterType::kParameterFloat): {
-      RuntimeParameterFloat *runtime_parameter = new RuntimeParameterFloat;
-      runtime_parameter->value = parameter.f;
-      runtime_operator->params.insert({name, runtime_parameter});
-      break;
-    }
-
-    case int(RuntimeParameterType::kParameterString): {
-      RuntimeParameterString *runtime_parameter = new RuntimeParameterString;
-      runtime_parameter->value = parameter.s;
-      runtime_operator->params.insert({name, runtime_parameter});
-      break;
-    }
-
-    case int(RuntimeParameterType::kParameterIntArray): {
-      RuntimeParameterIntArray *runtime_parameter =
-          new RuntimeParameterIntArray;
-      runtime_parameter->value = parameter.ai;
-      runtime_operator->params.insert({name, runtime_parameter});
-      break;
-    }
-
-    case int(RuntimeParameterType::kParameterFloatArray): {
-      RuntimeParameterFloatArray *runtime_parameter =
-          new RuntimeParameterFloatArray;
-      runtime_parameter->value = parameter.af;
-      runtime_operator->params.insert({name, runtime_parameter});
-      break;
-    }
-    case int(RuntimeParameterType::kParameterStringArray): {
-      RuntimeParameterStringArray *runtime_parameter =
-          new RuntimeParameterStringArray;
-      runtime_parameter->value = parameter.as;
-      runtime_operator->params.insert({name, runtime_parameter});
-      break;
-    }
+    // 你要写的代码
+    // ...
     default: {
       LOG(FATAL) << "Unknown parameter type: " << type;
     }
@@ -221,6 +167,11 @@ void RuntimeGraph::InitGraphAttrs(
     }
     }
   }
+}
+
+const std::vector<std::shared_ptr<RuntimeOperator>> &
+RuntimeGraph::operators() const {
+  return this->operators_;
 }
 
 } // namespace kuiper_infer

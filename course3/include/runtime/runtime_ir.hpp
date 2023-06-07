@@ -44,13 +44,15 @@ public:
    */
   const std::string &bin_path() const;
 
-private:
   /**
    * 计算图的初始化
    * @return 是否初始化成功
    */
   bool Init();
 
+  const std::vector<std::shared_ptr<RuntimeOperator>> &operators() const;
+
+private:
   /**
    * 初始化kuiper infer计算图节点中的输入操作数
    * @param inputs pnnx中的输入操作数

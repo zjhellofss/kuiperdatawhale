@@ -17,6 +17,7 @@ static std::string ShapeStr(const std::vector<int> &shapes) {
   }
   return ss.str();
 }
+
 TEST(test_ir, pnnx_graph_ops) {
   using namespace kuiper_infer;
   /**
@@ -183,7 +184,7 @@ TEST(test_ir, pnnx_graph_all_homework) {
     if (operator_->name == "linear") {
       const auto &params = operator_->params;
       ASSERT_EQ(params.size(), 3);
-      /////////////////////////////////
+        /////////////////////////////////
       ASSERT_EQ(params.count("bias"), 1);
       RuntimeParameter *parameter_bool = params.at("bias");
       ASSERT_NE(parameter_bool, nullptr);

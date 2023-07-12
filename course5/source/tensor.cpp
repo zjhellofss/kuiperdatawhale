@@ -29,7 +29,7 @@ Tensor<float>::Tensor(uint32_t rows, uint32_t cols) {
   this->raw_shapes_ = std::vector<uint32_t>{rows, cols};
 }
 
-Tensor<float>::Tensor(const std::vector<uint32_t>& shapes) {
+Tensor<float>::Tensor(const std::vector<uint32_t> &shapes) {
   CHECK(!shapes.empty() && shapes.size() <= 3);
 
   uint32_t remaining = 3 - shapes.size();
@@ -50,21 +50,21 @@ Tensor<float>::Tensor(const std::vector<uint32_t>& shapes) {
   }
 }
 
-Tensor<float>::Tensor(const Tensor& tensor) {
+Tensor<float>::Tensor(const Tensor &tensor) {
   if (this != &tensor) {
     this->data_ = tensor.data_;
     this->raw_shapes_ = tensor.raw_shapes_;
   }
 }
 
-Tensor<float>::Tensor(Tensor<float>&& tensor) noexcept {
+Tensor<float>::Tensor(Tensor<float> &&tensor) noexcept {
   if (this != &tensor) {
     this->data_ = std::move(tensor.data_);
     this->raw_shapes_ = tensor.raw_shapes_;
   }
 }
 
-Tensor<float>& Tensor<float>::operator=(Tensor<float>&& tensor) noexcept {
+Tensor<float> &Tensor<float>::operator=(Tensor<float> &&tensor) noexcept {
   if (this != &tensor) {
     this->data_ = std::move(tensor.data_);
     this->raw_shapes_ = tensor.raw_shapes_;
@@ -72,7 +72,7 @@ Tensor<float>& Tensor<float>::operator=(Tensor<float>&& tensor) noexcept {
   return *this;
 }
 
-Tensor<float>& Tensor<float>::operator=(const Tensor& tensor) {
+Tensor<float> &Tensor<float>::operator=(const Tensor &tensor) {
   if (this != &tensor) {
     this->data_ = tensor.data_;
     this->raw_shapes_ = tensor.raw_shapes_;
@@ -100,13 +100,13 @@ uint32_t Tensor<float>::size() const {
   return this->data_.size();
 }
 
-void Tensor<float>::set_data(const arma::fcube& data) {
+void Tensor<float>::set_data(const arma::fcube &data) {
   CHECK(data.n_rows == this->data_.n_rows)
-      << data.n_rows << " != " << this->data_.n_rows;
+          << data.n_rows << " != " << this->data_.n_rows;
   CHECK(data.n_cols == this->data_.n_cols)
-      << data.n_cols << " != " << this->data_.n_cols;
+          << data.n_cols << " != " << this->data_.n_cols;
   CHECK(data.n_slices == this->data_.n_slices)
-      << data.n_slices << " != " << this->data_.n_slices;
+          << data.n_slices << " != " << this->data_.n_slices;
   this->data_ = data;
 }
 
@@ -117,7 +117,7 @@ float Tensor<float>::index(uint32_t offset) const {
   return this->data_.at(offset);
 }
 
-float& Tensor<float>::index(uint32_t offset) {
+float &Tensor<float>::index(uint32_t offset) {
   CHECK(offset < this->data_.size()) << "Tensor index out of bound!";
   return this->data_.at(offset);
 }
@@ -127,16 +127,16 @@ std::vector<uint32_t> Tensor<float>::shapes() const {
   return {this->channels(), this->rows(), this->cols()};
 }
 
-arma::fcube& Tensor<float>::data() { return this->data_; }
+arma::fcube &Tensor<float>::data() { return this->data_; }
 
-const arma::fcube& Tensor<float>::data() const { return this->data_; }
+const arma::fcube &Tensor<float>::data() const { return this->data_; }
 
-arma::fmat& Tensor<float>::slice(uint32_t channel) {
+arma::fmat &Tensor<float>::slice(uint32_t channel) {
   CHECK_LT(channel, this->channels());
   return this->data_.slice(channel);
 }
 
-const arma::fmat& Tensor<float>::slice(uint32_t channel) const {
+const arma::fmat &Tensor<float>::slice(uint32_t channel) const {
   CHECK_LT(channel, this->channels());
   return this->data_.slice(channel);
 }
@@ -148,14 +148,14 @@ float Tensor<float>::at(uint32_t channel, uint32_t row, uint32_t col) const {
   return this->data_.at(row, col, channel);
 }
 
-float& Tensor<float>::at(uint32_t channel, uint32_t row, uint32_t col) {
+float &Tensor<float>::at(uint32_t channel, uint32_t row, uint32_t col) {
   CHECK_LT(row, this->rows());
   CHECK_LT(col, this->cols());
   CHECK_LT(channel, this->channels());
   return this->data_.at(row, col, channel);
 }
 
-void Tensor<float>::Padding(const std::vector<uint32_t>& pads,
+void Tensor<float>::Padding(const std::vector<uint32_t> &pads,
                             float padding_value) {
   CHECK(!this->data_.empty());
   CHECK_EQ(pads.size(), 4);
@@ -173,7 +173,7 @@ void Tensor<float>::Fill(float value) {
   this->data_.fill(value);
 }
 
-void Tensor<float>::Fill(const std::vector<float>& values, bool row_major) {
+void Tensor<float>::Fill(const std::vector<float> &values, bool row_major) {
   CHECK(!this->data_.empty());
   const uint32_t total_elems = this->data_.size();
   CHECK_EQ(values.size(), total_elems);
@@ -184,9 +184,10 @@ void Tensor<float>::Fill(const std::vector<float>& values, bool row_major) {
     const uint32_t channels = this->data_.n_slices;
 
     for (uint32_t i = 0; i < channels; ++i) {
-      auto& channel_data = this->data_.slice(i);
-      const arma::fmat& channel_data_t =
-          arma::fmat(values.data() + i * planes, this->cols(), this->rows());
+      auto &channel_data = this->data_.slice(i);
+      const arma::fmat &channel_data_t =
+          arma::fmat((float *) values.data() + i * planes, this->cols(),
+                     this->rows(), false, true);
       channel_data = channel_data_t.t();
     }
   } else {
@@ -216,19 +217,19 @@ void Tensor<float>::Ones() {
   this->Fill(1.f);
 }
 
-void Tensor<float>::Transform(const std::function<float(float)>& filter) {
+void Tensor<float>::Transform(const std::function<float(float)> &filter) {
   CHECK(!this->data_.empty());
   this->data_.transform(filter);
 }
 
-const std::vector<uint32_t>& Tensor<float>::raw_shapes() const {
+const std::vector<uint32_t> &Tensor<float>::raw_shapes() const {
   CHECK(!this->raw_shapes_.empty());
   CHECK_LE(this->raw_shapes_.size(), 3);
   CHECK_GE(this->raw_shapes_.size(), 1);
   return this->raw_shapes_;
 }
 
-void Tensor<float>::Reshape(const std::vector<uint32_t>& shapes,
+void Tensor<float>::Reshape(const std::vector<uint32_t> &shapes,
                             bool row_major) {
   CHECK(!this->data_.empty());
   CHECK(!shapes.empty());
@@ -258,12 +259,12 @@ void Tensor<float>::Reshape(const std::vector<uint32_t>& shapes,
   }
 }
 
-float* Tensor<float>::raw_ptr() {
+float *Tensor<float>::raw_ptr() {
   CHECK(!this->data_.empty());
   return this->data_.memptr();
 }
 
-float* Tensor<float>::raw_ptr(uint32_t offset) {
+float *Tensor<float>::raw_ptr(uint32_t offset) {
   const uint32_t size = this->size();
   CHECK(!this->data_.empty());
   CHECK_LT(offset, size);
@@ -280,7 +281,7 @@ std::vector<float> Tensor<float>::values(bool row_major) {
   } else {
     uint32_t index = 0;
     for (uint32_t c = 0; c < this->data_.n_slices; ++c) {
-      const arma::fmat& channel = this->data_.slice(c).t();
+      const arma::fmat &channel = this->data_.slice(c).t();
       std::copy(channel.begin(), channel.end(), values.begin() + index);
       index += channel.size();
     }
@@ -289,11 +290,18 @@ std::vector<float> Tensor<float>::values(bool row_major) {
   return values;
 }
 
-float* Tensor<float>::matrix_raw_ptr(uint32_t index) {
+float *Tensor<float>::matrix_raw_ptr(uint32_t index) {
   CHECK_LT(index, this->channels());
   uint32_t offset = index * this->rows() * this->cols();
   CHECK_LE(offset, this->size());
-  float* mem_ptr = this->raw_ptr() + offset;
+  float *mem_ptr = this->raw_ptr() + offset;
   return mem_ptr;
 }
+
+sftensor operator-=(sftensor tensor, const float value) {
+  CHECK(tensor != nullptr);
+  tensor->data() -= value;
+  return tensor;
+}
+
 }  // namespace kuiper_infer

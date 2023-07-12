@@ -68,6 +68,7 @@ TEST(test_registry, create_layer_reluforward) {
   sftensor input_tensor = std::make_shared<ftensor>(3, 4, 4);
   input_tensor->Rand();
   input_tensor->data() -= 0.5f;
+
   LOG(INFO) << input_tensor->data();
 
   std::vector<sftensor> inputs(1);
@@ -79,4 +80,3 @@ TEST(test_registry, create_layer_reluforward) {
     output->Show();
   }
 }
-

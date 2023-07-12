@@ -9,15 +9,15 @@
 #include <vector>
 
 namespace kuiper_infer {
-template <typename T = float>
+template<typename T = float>
 class Tensor {};
 
-template <>
+template<>
 class Tensor<uint8_t> {
   // 待实现
 };
 
-template <>
+template<>
 class Tensor<float> {
  public:
   explicit Tensor() = default;
@@ -47,15 +47,15 @@ class Tensor<float> {
    * 创建张量
    * @param shapes 张量的维度
    */
-  explicit Tensor(const std::vector<uint32_t>& shapes);
+  explicit Tensor(const std::vector<uint32_t> &shapes);
 
-  Tensor(const Tensor& tensor);
+  Tensor(const Tensor &tensor);
 
-  Tensor(Tensor&& tensor) noexcept;
+  Tensor(Tensor &&tensor) noexcept;
 
-  Tensor<float>& operator=(Tensor&& tensor) noexcept;
+  Tensor<float> &operator=(Tensor &&tensor) noexcept;
 
-  Tensor<float>& operator=(const Tensor& tensor);
+  Tensor<float> &operator=(const Tensor &tensor);
 
   /**
    * 返回张量的行数
@@ -85,7 +85,7 @@ class Tensor<float> {
    * 设置张量中的具体数据
    * @param data 数据
    */
-  void set_data(const arma::fcube& data);
+  void set_data(const arma::fcube &data);
 
   /**
    * 返回张量是否为空
@@ -105,7 +105,7 @@ class Tensor<float> {
    * @param offset 需要访问的位置
    * @return offset位置的元素
    */
-  float& index(uint32_t offset);
+  float &index(uint32_t offset);
 
   /**
    * 张量的尺寸大小
@@ -117,33 +117,33 @@ class Tensor<float> {
    * 张量的实际尺寸大小
    * @return 张量的实际尺寸大小
    */
-  const std::vector<uint32_t>& raw_shapes() const;
+  const std::vector<uint32_t> &raw_shapes() const;
 
   /**
    * 返回张量中的数据
    * @return 张量中的数据
    */
-  arma::fcube& data();
+  arma::fcube &data();
 
   /**
    * 返回张量中的数据
    * @return 张量中的数据
    */
-  const arma::fcube& data() const;
+  const arma::fcube &data() const;
 
   /**
    * 返回张量第channel通道中的数据
    * @param channel 需要返回的通道
    * @return 返回的通道
    */
-  arma::fmat& slice(uint32_t channel);
+  arma::fmat &slice(uint32_t channel);
 
   /**
    * 返回张量第channel通道中的数据
    * @param channel 需要返回的通道
    * @return 返回的通道
    */
-  const arma::fmat& slice(uint32_t channel) const;
+  const arma::fmat &slice(uint32_t channel) const;
 
   /**
    * 返回特定位置的元素
@@ -161,14 +161,14 @@ class Tensor<float> {
    * @param col 列数
    * @return 特定位置的元素
    */
-  float& at(uint32_t channel, uint32_t row, uint32_t col);
+  float &at(uint32_t channel, uint32_t row, uint32_t col);
 
   /**
    * 填充张量
    * @param pads 填充张量的尺寸
    * @param padding_value 填充张量
    */
-  void Padding(const std::vector<uint32_t>& pads, float padding_value);
+  void Padding(const std::vector<uint32_t> &pads, float padding_value);
 
   /**
    * 使用value值去初始化向量
@@ -180,7 +180,7 @@ class Tensor<float> {
    * 使用values中的数据初始化张量
    * @param values 用来初始化张量的数据
    */
-  void Fill(const std::vector<float>& values, bool row_major = true);
+  void Fill(const std::vector<float> &values, bool row_major = true);
 
   /**
    * 返回Tensor内的所有数据
@@ -209,7 +209,7 @@ class Tensor<float> {
    * @param shapes 张量的实际尺寸大小
    * @param row_major 根据行主序还是列主序进行reshape
    */
-  void Reshape(const std::vector<uint32_t>& shapes, bool row_major = false);
+  void Reshape(const std::vector<uint32_t> &shapes, bool row_major = false);
 
   /**
    * 展开张量
@@ -220,27 +220,27 @@ class Tensor<float> {
    * 对张量中的元素进行过滤
    * @param filter 过滤函数
    */
-  void Transform(const std::function<float(float)>& filter);
+  void Transform(const std::function<float(float)> &filter);
 
   /**
    * 返回数据的原始指针
    * @return 返回数据的原始指针
    */
-  float* raw_ptr();
+  float *raw_ptr();
 
   /**
    * 返回数据的原始指针
    * @param offset 数据指针的偏移量
    * @return 返回数据的原始指针
    */
-  float* raw_ptr(uint32_t offset);
+  float *raw_ptr(uint32_t offset);
 
   /**
    * 返回第index个矩阵的起始地址
    * @param index 第index个矩阵
    * @return 第index个矩阵的起始地址
    */
-  float* matrix_raw_ptr(uint32_t index);
+  float *matrix_raw_ptr(uint32_t index);
 
  private:
   std::vector<uint32_t> raw_shapes_;  // 张量数据的实际尺寸大小
@@ -249,6 +249,8 @@ class Tensor<float> {
 
 using ftensor = Tensor<float>;
 using sftensor = std::shared_ptr<Tensor<float>>;
+
+
 
 }  // namespace kuiper_infer
 

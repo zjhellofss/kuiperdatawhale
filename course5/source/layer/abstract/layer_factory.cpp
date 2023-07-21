@@ -49,7 +49,7 @@ std::shared_ptr<Layer> LayerRegisterer::CreateLayer(
   const auto& creator = registry.find(layer_type)->second;
 
   LOG_IF(FATAL, !creator) << "Layer creator is empty!";
-  std::shared_ptr<Layer> layer;
+  std::shared_ptr<Layer> layer;// 空的layer
   const auto& status = creator(op, layer);
   LOG_IF(FATAL, status != ParseParameterAttrStatus::kParameterAttrParseSuccess)
       << "Create the layer: " << layer_type

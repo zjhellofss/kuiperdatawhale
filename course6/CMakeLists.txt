@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
-project(kuiper_datawhale_course5)
+project(kuiper_datawhale_course6)
 set(CMAKE_CXX_STANDARD 17)
 find_package(benchmark REQUIRED)
 find_package(OpenMP REQUIRED)

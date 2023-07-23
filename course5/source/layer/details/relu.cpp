@@ -89,5 +89,6 @@ ParseParameterAttrStatus ReluLayer::GetInstance(
   return ParseParameterAttrStatus::kParameterAttrParseSuccess;
 }
 
+// 使用工具类注册算子
 LayerRegistererWrapper kReluGetInstance("nn.ReLU", ReluLayer::GetInstance);
 }  // namespace kuiper_infer

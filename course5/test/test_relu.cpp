@@ -15,6 +15,11 @@ TEST(test_registry, registry1) {
   using namespace kuiper_infer;
   LayerRegisterer::CreateRegistry *registry1 = RegistryGlobal();
   LayerRegisterer::CreateRegistry *registry2 = RegistryGlobal();
+
+  LayerRegisterer::CreateRegistry *registry3 = RegistryGlobal();
+  LayerRegisterer::CreateRegistry *registry4 = RegistryGlobal();
+  float *a = new float{3};
+  float *b = new float{4};
   ASSERT_EQ(registry1, registry2);
 }
 
@@ -33,11 +38,12 @@ TEST(test_registry, registry2) {
   ASSERT_EQ(registry1, registry2);
   LayerRegisterer::RegisterCreator("test_type", MyTestCreator);
   LayerRegisterer::CreateRegistry registry3 = LayerRegisterer::Registry();
-  ASSERT_EQ(registry3.size(), 1);
+  ASSERT_EQ(registry3.size(), 2);
   ASSERT_NE(registry3.find("test_type"), registry3.end());
 }
 
 TEST(test_registry, create_layer) {
+  // 注册了一个test_type_1算子
   LayerRegisterer::RegisterCreator("test_type_1", MyTestCreator);
   std::shared_ptr<RuntimeOperator> op = std::make_shared<RuntimeOperator>();
   op->type = "test_type_1";

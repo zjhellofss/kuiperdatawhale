@@ -6,4 +6,4 @@ add_subdirectory(course2)
 add_subdirectory(course3)
 add_subdirectory(course4)
 add_subdirectory(course5)
-
+add_subdirectory(course6)

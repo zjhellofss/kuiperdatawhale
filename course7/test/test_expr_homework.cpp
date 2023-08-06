@@ -65,7 +65,7 @@ TEST(test_parser, generate_sin) {
   ASSERT_EQ(node->right->num_index, 1);
 }
 
-TEST(test_expression, complex1) {
+TEST(test_expression, complex2) {
   using namespace kuiper_infer;
   const std::string &str = "mul(@1,sin(@0))";
   ExpressionLayer layer(str);

@@ -113,7 +113,6 @@ InferStatus ExpressionLayer::Forward(
 
       std::vector<std::shared_ptr<Tensor<float>>> output_token_nodes(
           batch_size);
-#pragma omp parallel for num_threads(batch_size)
       for (uint32_t i = 0; i < batch_size; ++i) {
         // do execution
         if (op == int(TokenType::TokenAdd)) {

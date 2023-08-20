@@ -14,7 +14,9 @@
 
 ## 模型执行函数
 
-我们已经在之前的课时中讲解了所有算子的执行顺序排序，因为我们在对模型的所有算子进行拓扑排序后，就可以得到一个算子序列 `topo_operators_`， 所以在执行函数`Forward`时，我们只需**按顺序依次执行**算子序列（`topo_operators`）中的每一个算子即可。
+在之前的课程中，我们已经详细讲解了模型中所有算子的执行顺序排序，也称为拓扑序。通过对模型中的所有算子进行拓扑排序，我们可以得到一个算子序列 `topo_operators_`。
+
+因此在执行函数 `Forward` 时，我们只需按照顺序逐个执行算子序列 (`topo_operators`) 中每个算子的 `Forward` 方法即可，而每个算子（`Layer`）的具体计算逻辑都体现在它重载的 `Forward` 方法中。
 
 ```cpp
 std::vector<std::shared_ptr<Tensor<float>>> RuntimeGraph::Forward(
@@ -40,20 +42,22 @@ std::vector<std::shared_ptr<Tensor<float>>> RuntimeGraph::Forward(
     }
 ```
 
-在算子执行的阶段，我们依次取出`topo_operators`数组中的所有算子。我们可以将算子分为三类：输入类型、输出类型和普通算子。普通算子包括卷积、池化、线性激活等。
+在算子执行的阶段，我们依次取出`topo_operators`数组中的所有算子。在遍历执行的循环内，我们可以将算子分为三类：**输入类型**、**输出类型**和**普通算子**。普通算子包括卷积、池化、线性激活等。
 
 ### 执行输入类型算子
 
-首先，让我们来分析执行输入类型算子的这个分支
+首先，让我们来分析执行输入类型算子的这个分支。由于它是输入节点，我们无需调用它的 **Forward** 方法进行执行，只需要将输入节点的输入拷贝到下一级节点即可完成操作。
 
 ```cpp
-current_op->has_forward = true;
-ProbeNextLayer(current_op, inputs);
+if (current_op->type == "pnnx.Input"){
+    current_op->has_forward = true;
+    ProbeNextLayer(current_op, inputs);
+}
 ```
 
-在`ProbeNextLayer`函数中，我们对当前节点的所有后继节点进行依次的遍历，并将**当前节点的==输出==**赋值给**后继节点的==输入==**。
+在`ProbeNextLayer`函数中，我们对当前节点的所有后继节点进行依次的遍历，并将**当前节点的==输出==**赋值给**后继节点的==输入==**。首先，我们获取当前节点的所有后继节点`next_ops`，然后对这些后继节点进行遍历操作。
 
-首先，我们获取当前节点的所有后继节点`next_ops`；然后对这些后继节点进行遍历操作，在每次遍历时，我们获取当前节点的`current_op`的后继节点`next_rt_operator`的输入张量`next_input_operands`.
+每次进行遍历时，我们会获取当前节点 `current_op` 的后继节点 `next_rt_operator` 的输入张量 `next_input_operands`.
 
 ```cpp
 void RuntimeGraph::ProbeNextLayer(
@@ -66,7 +70,7 @@ void RuntimeGraph::ProbeNextLayer(
         ...
 ```
 
-随后，我们再找到后继节点`next_rt_operator`中**关于`current_op`节点的输入空间`next_input_datas`。**这是因为后继节点`next_rt_operator`的输入可能有多个，我们需要将**当前节点的输出填入到后继节点对应的输入空间中。**
+随后，我们再找到后继节点`next_rt_operator`中**关于`current_op`节点的输入空间`next_input_datas`。**这是因为后继节点`next_rt_operator`的输入可能有多个，我们需要将**当前节点的输出填入到==后继节点对应的输入空间中。==**
 
 ```cpp
 void RuntimeGraph::ProbeNextLayer(
@@ -87,9 +91,9 @@ void RuntimeGraph::ProbeNextLayer(
     }
 ```
 
-如下示意图所示，我们需要将当前节点（`current_op`）的输出填入到后继节点`next_rt_operator`关于`current_op.name`对应的位置中。
+如下所示，我们需要将当前节点（`current_op`）的输出填入到后继节点 `next_rt_operator` 中对应位置的输入张量中。换句话说，就是将上一级节点的输出放入到后继节点对应的输入张量中。
 
-当我们遍历到`next_rt_operator`的其他前驱节点时，我们同样需要把该前驱节点（`other_op`）的输出张量放入到`next_rt_operator`对应的输入张量空间中。
+当我们遍历到 `next_rt_operator` 的其他前驱节点时，同样需要将该前驱节点（`other_op`）的输出张量放入到 `next_rt_operator` 对应的输入张量空间中。
 
 ```
 next_input_operands:
@@ -99,7 +103,7 @@ next_input_operands:
 }
 ```
 
-在找到后继节点之后，我们将当前节点的输出数据赋值给下一个节点的输入数据。
+在找到后继节点之后，我们将当前节点的输出数据赋值给下一个节点的输入数据，见以下代码的第11行。
 
 ```cpp
 void RuntimeGraph::ProbeNextLayer(
@@ -129,7 +133,7 @@ else {
 }
 ```
 
-执行普通类型的算子和执行输入类型的算子流程大致相同。但是在执行普通类型的算子时，会首先调用当前算子的`Forward`版本。在当前算子执行完毕后，**通过`ProbeNextLayer`函数将其输出赋值给后继节点的输入张量。**
+执行普通类型的算子和执行输入类型的算子流程大致相同。但是在执行普通类型的算子时，会首先调用当前算子的`Forward`版本，Forward函数中再调用各类算子的重载方法。在当前算子执行完毕后，**通过`ProbeNextLayer`函数将当前节点的输出赋值给后继节点的输入张量，具体流程同上所述。**
 
 ### 返回模型推理的输出
 
@@ -145,7 +149,7 @@ if (operators_maps_.find(output_name_) != operators_maps_.end()) {
 }
 ```
 
-在所有算子执行完毕后，我们需要首先查询与`output_name`名称对应的算子（`output_op`），然后获取该算子对应的输出张量，即模型的相应输出`output_operand`.
+在所有算子执行完毕后，我们需要首先查询与`output_name`名称对应的算子（`output_op`），然后获取该算子对应的输出张量，即模型的相应输出`output_operand`，随后再作为`Graph.Forward`函数调用的返回。
 
 ## Resnet网络需要的算子
 
@@ -158,6 +162,8 @@ Resnet模型是一种非常经典的图像分类模型，对于了解过深度�
 3. 自适应平均池化层（Adaptive Average Pooling）
 4. 全连接层（Fully Connected Layer）也叫线性层（Linear Layer）
 5. 最大池化层
+
+但是由于篇幅原因，我们在这里只讲解全连接算子。
 
 ## Linear算子的编写和注册
 
@@ -195,7 +201,7 @@ if (use_bias_param == nullptr) {
 }
 ```
 
-获取`RuntimeOperator`中的权重信息，并将权重赋值给`Linear Layer`.
+获取`RuntimeOperator`中的权重数组`weight`，并将权重赋值给`Linear Layer`.
 
 ```cpp
 const auto& attr = op->attribute;
@@ -228,13 +234,12 @@ const auto& weight = attr.at("weight");
 const auto& shapes = weight->shape;
 int32_t out_features = shapes.at(0);
 int32_t in_features = shapes.at(1);
-linear_layer =
-std::make_shared<LinearLayer>(in_features, out_features, use_bias);
+linear_layer = std::make_shared<LinearLayer>(in_features, out_features, use_bias);
 ```
 
 ### Linear层的初始化
 
-[PyTorch Linear层定义](https://pytorch.org/docs/stable/generated/torch.nn.Linear.html )，我们从这里可以看到Linear层的计算方式为$y=xA^{T}+b$，其中A表示权重矩阵。值得注意的是，在计算之前需要先对权重进行转置，在`Kuiper Infer`中，线性层的计算过程体现在`Forward`函数中，我们接下来将对这个函数进行逐行分析。
+[PyTorch Linear层定义](https://pytorch.org/docs/stable/generated/torch.nn.Linear.html )，我们从这里可以看到Linear层的计算方式为$y=xA^{T}+b$，其中A表示权重矩阵。值得注意的是，在计算之前需要先对权重进行转置，在`Kuiper Infer`中，线性层的计算过程体现在`Forward`这个重载函数中，我们接下来将对这个函数进行逐行分析。
 
 ```cpp
 InferStatus LinearLayer::Forward(
@@ -256,7 +261,7 @@ arma::fmat input_vec((float*)input->raw_ptr(), feature_dims, in_features_,
                      false, true);
 ```
 
-在以上的代码中，我们将输入数据加载到`input_vec`中，它的维度由`feature_dims`和`in_features`确定。在这里，我们可以观察到`input`的维度为$? \times in\_features$，而权重矩阵的维度为$in\_features\times out\_features$。这样它们的维度就完成了对齐，从而可以在接下来步骤中完成$x\times W^{T}$.
+在以上的代码中，我们将输入数据加载到`input_vec`中，它的维度由`feature_dims`和`in_features`确定。在这里，我们可以观察到`input`的维度为$? \times in\_features$，而权重矩阵的维度为$in\_features\times out\_features$。这样它们的维度就完成了对齐，从而可以在接下来步骤中完成$input\times W^{T}$.
 
 ```cpp
 arma::fmat& result = output->slice(0);
@@ -272,7 +277,7 @@ if (use_bias_) {
     }
 ```
 
-我们在执行函数Forward中只要依次对这个算子序列中的所有算子依次执行就可以了。在以上代码中，我们把输入向量`input_vec`与权重矩阵`weight_data`进行矩阵乘法，计算得到结果`result`。如果这个线性层使用了偏置`bias`，我们还需要将其加到结果`result`中。
+在以上代码中，我们把输入向量`input_vec`与权重矩阵`weight_data`进行矩阵乘法，计算得到结果`result`。如果这个线性层使用了偏置`bias`，我们还需要将偏移量加到结果`result`中。
 
 ## Resnet分类网络的推理
 
@@ -359,7 +364,7 @@ kuiper_infer::sftensor PreProcessImage(const cv::Mat &image){
 	...
 ```
 
-到目前为止，颜色空间格式在内存中的存储形式是RGBRGBRGB的排列。为了适配PyTorch，我们还需要将颜色空间格式转换为RRRGGGBBB的排列形式。换句话说，我们就是将图像格式从NHWC转换为NCHW.
+到目前为止，颜色空间格式在内存中的存储形式是RGBRGBRGB的排列。为了适配PyTorch，我们需要将颜色空间格式转换为RRRGGGBBB的排列形式，即将图像格式从NHWC转换为NCHW.
 
 ```cpp
 kuiper_infer::sftensor PreProcessImage(const cv::Mat &image){ 
@@ -417,7 +422,7 @@ for (uint32_t i = 0; i < batch_size; ++i) {
 }
 ```
 
-首先，我们使用`OpenCV`的`imread`函数读入输入图像`car.jpg`。`car.jpg`的内容如下所示，然后对读入的图像应用前面介绍过的预处理方法。
+首先，我们可以使用 `OpenCV` 的 `imread` 函数读取输入图像 `car.jpg`。该图像的内容如下所示，然后我们需要对读取的图像应用之前介绍过的预处理方法。
 
 <img src="https://i.imgur.com/kIP1Ja0.jpg" style="zoom: 67%;" align="left" />
 
@@ -428,7 +433,7 @@ for (uint32_t i = 0; i < batch_size; ++i) {
 const std::vector<sftensor> outputs = graph.Forward(inputs, true);
 ```
 
-以上的代码不多解释了，就是调用graph的Forward方法对输入图像进行推理，并将推理的结果放到outputs张量数组中。在`Python`代码中，还有使用`softmax`来对输出向量进行后处理的步骤，所以我们在C++中也要有对应的后处理过程。
+以上的代码不多解释了，就是调用graph的**Forward**方法对输入图像进行推理，并将推理的结果放到`outputs`张量数组中。在`Python`代码中，还有使用`softmax`来对输出向量进行后处理的步骤，所以我们在C++中也要有对应的后处理过程。
 
 ```python
 probabilities = torch.nn.functional.softmax(output[0], dim=0)
@@ -470,13 +475,13 @@ for (int i = 0; i < outputs_softmax.size(); ++i) {
 class with max prob is 0.663738 index 817
 ```
 
-我们通过查阅ImageNet的类别表，可以知道第816+1个类别是运动型跑车，和本图能对应上。至此，我们完成了KuiperInfer对Resnet网络的推理。
+我们通过查阅ImageNet的类别表，可以知道第816+1个类别是运动型跑车，和本图可以对应上。至此，我们完成了KuiperInfer对Resnet网络的推理。
 
 ## 课堂作业
 
-
-
-
-
-
+1. 关于ResNet网络中其他用到的算子，请同学们自行进行分析。主要包括以下三个算子：
+   - Flatten层，详见 `source/layer/details/flatten.cpp`；
+   - 自适应池化层，详见 `source/layer/details/adaptive_avgpooling.cpp`；
+   - Softmax层，在后处理中使用，详见 `source/layer/details/softmax.cpp`。
+2. 请仔细分析本节课实现ResNet推理的各个步骤流程，包括模型的加载、图片的加载、对输入的预处理等，还有对模型中所有算子进行调度执行的 `graph.Forward` 方法的实现。
 

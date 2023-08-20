@@ -1,0 +1,7 @@
+7767517
+5 4
+pnnx.Input               pnnx_input_0             0 1 0 #0=(2,3,16,16)f32
+nn.Conv2d                op1                      1 1 0 1 bias=True dilation=(1,1) groups=1 in_channels=3 kernel_size=(3,3) out_channels=32 padding=(1,1) padding_mode=zeros stride=(1,1) @bias=(32)f32 @weight=(32,3,3,3)f32 #0=(2,3,16,16)f32 #1=(2,32,16,16)f32
+nn.Conv2d                op3                      1 1 1 2 bias=True dilation=(1,1) groups=1 in_channels=32 kernel_size=(3,3) out_channels=64 padding=(1,1) padding_mode=zeros stride=(1,1) @bias=(64)f32 @weight=(64,32,3,3)f32 #1=(2,32,16,16)f32 #2=(2,64,16,16)f32
+nn.Conv2d                op5                      1 1 2 3 bias=True dilation=(1,1) groups=1 in_channels=64 kernel_size=(3,3) out_channels=128 padding=(1,1) padding_mode=zeros stride=(1,1) @bias=(128)f32 @weight=(128,64,3,3)f32 #2=(2,64,16,16)f32 #3=(2,128,16,16)f32
+pnnx.Output              pnnx_output_0            1 0 3 #3=(2,128,16,16)f32

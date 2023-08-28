@@ -47,6 +47,8 @@
 
 .idea/vcs.xml
 
+build
+
 cmake-build-debug/.cmake/api/v1/query/cache-v2
 
 cmake-build-debug/.cmake/api/v1/query/cmakeFiles-v1
@@ -504,3 +506,4 @@ course3/log/Kuiper.fss-Inspiron.fss.log.WARNING.20230712-202057.17614
 course3/log/Kuiper.fss-Inspiron.fss.log.WARNING.20230712-204322.22288
 
 course3/log/Kuiper.INFO
+

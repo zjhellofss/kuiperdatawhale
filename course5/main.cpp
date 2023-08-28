@@ -9,7 +9,7 @@
 int main(int argc, char *argv[]) {
   testing::InitGoogleTest(&argc, argv);
   google::InitGoogleLogging("Kuiper");
-  FLAGS_log_dir = "../../course3/log";
+  FLAGS_log_dir = "../../course5/log";
   FLAGS_alsologtostderr = true;
 
   LOG(INFO) << "Start test...\n";

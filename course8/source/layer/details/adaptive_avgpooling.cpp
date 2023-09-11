@@ -72,7 +72,6 @@ InferStatus AdaptiveAveragePoolingLayer::Forward(
     }
   }
 
-#pragma omp parallel for num_threads(batch)
   for (uint32_t i = 0; i < batch; ++i) {
     const std::shared_ptr<Tensor<float>>& input_data = inputs.at(i);
     CHECK(input_data != nullptr && !input_data->empty())

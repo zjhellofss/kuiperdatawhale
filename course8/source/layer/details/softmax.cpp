@@ -49,7 +49,6 @@ InferStatus SoftmaxLayer::Forward(
   }
 
   const uint32_t batch_size = inputs.size();
-#pragma omp parallel for num_threads(batch_size)
   for (uint32_t i = 0; i < batch_size; ++i) {
     const std::shared_ptr<Tensor<float>>& input = inputs.at(i);
     CHECK(input != nullptr && !input->empty())
@@ -99,7 +98,6 @@ InferStatus SoftmaxLayer::Forward(
 
     const auto& input_values = input->values(true);
     std::vector<float> output_values(input_values.size());
-#pragma omp parallel for collapse(2)
     for (uint32_t outer_size = 0; outer_size < outer_sizes; ++outer_size) {
       for (uint32_t inner_size = 0; inner_size < inner_sizes; ++inner_size) {
         float max_value = std::numeric_limits<float>::lowest();

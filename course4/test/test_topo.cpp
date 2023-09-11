@@ -93,7 +93,7 @@ TEST(test_ir, build1_output_tensors) {
     LOG(INFO) << op->name;
     // 打印op输出空间的张量
     const auto &operand = op->output_operands;
-    if (operand->datas.empty()) {
+    if (!operand || operand->datas.empty()) {
       continue;
     }
     const uint32_t batch_size = operand->datas.size();

@@ -88,6 +88,12 @@ std::shared_ptr<Tensor<float>> TensorElementMultiply(
 std::shared_ptr<Tensor<float>> TensorCreate(uint32_t channels, uint32_t rows,
                                             uint32_t cols);
 
+
+std::shared_ptr<Tensor<float>> TensorCreate(uint32_t rows, uint32_t cols);
+
+
+std::shared_ptr<Tensor<float>> TensorCreate(uint32_t size);
+
 /**
  * 创建一个张量
  * @param shapes 张量的形状

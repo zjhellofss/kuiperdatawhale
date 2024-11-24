@@ -99,7 +99,7 @@ private:
   InitGraphParams(const std::map<std::string, pnnx::Parameter> &params,
                   const std::shared_ptr<RuntimeOperator> &runtime_operator);
 
-  void ReverseTopo(const std::shared_ptr<RuntimeOperator> &root_op);
+  void TopoSort(const std::shared_ptr<RuntimeOperator> &root_op);
 
 private:
   enum class GraphState {

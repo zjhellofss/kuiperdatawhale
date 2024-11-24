@@ -5,6 +5,7 @@
 #include <memory>
 #include <utility>
 #include <vector>
+#include <queue>
 
 namespace kuiper_infer {
 RuntimeGraph::RuntimeGraph(std::string param_path, std::string bin_path)
@@ -241,13 +242,13 @@ void RuntimeGraph::Build(const std::string &input_name,
   for (const auto &[_, op] : operators_maps_) {
     // 根据输入节点构建拓扑排序
     if (op->type == "pnnx.Input" && !op->has_forward) {
-      this->ReverseTopo(op);
+      this->TopoSort(op);
     }
   }
 
   CHECK(topo_operators_.size() == operators_.size())
       << "Build wrong topo queue";
-  std::reverse(topo_operators_.begin(), topo_operators_.end());
+//  std::reverse(topo_operators_.begin(), topo_operators_.end());
 
   graph_state_ = GraphState::Complete;
   input_name_ = input_name;
@@ -258,22 +259,23 @@ void RuntimeGraph::Build(const std::string &input_name,
   }
 }
 
-void RuntimeGraph::ReverseTopo(
+void RuntimeGraph::TopoSort(
     const std::shared_ptr<RuntimeOperator> &root_op) {
   CHECK(root_op != nullptr) << "current operator is nullptr";
-  root_op->has_forward = true;
-  const auto &next_ops = root_op->output_operators;
-  for (const auto &[_, op] : next_ops) {
-    if (op != nullptr) {
-      if (!op->has_forward) {
-        this->ReverseTopo(op);
+  std::queue<std::shared_ptr<RuntimeOperator>> q;
+  q.push(root_op);
+  while (!q.empty()) {
+    auto del = q.front();
+    q.pop();
+    this->topo_operators_.push_back(del);
+    const auto &next_ops = del->output_operators;
+    for (const auto &[_, op]: next_ops) {
+      if (op != nullptr && !op->has_forward) {
+        op->has_forward = true;
+        q.push(op);
       }
     }
   }
-  for (const auto &[_, op] : next_ops) {
-    CHECK_EQ(op->has_forward, true);
-  }
-  this->topo_operators_.push_back(root_op);
 }
 
 void RuntimeGraph::InitGraphAttrs(
